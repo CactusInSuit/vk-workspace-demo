@@ -22,7 +22,7 @@ export const TEMPLATES = [{id:'blank',name:'Пустая доска',desc:'Св�
 export function createBoard(name='Новая доска',template='blank',team='personal'){return {id:uid(),name,team,template,nodes:demoNodes(template),favorite:false,shared:false,deleted:false,background:'dots',updatedAt:Date.now(),createdAt:Date.now(),comments:[],share:{enabled:false,role:'view'},versions:[]};}
 export function initialState(){
  const boards=[createBoard('Командная сессия','session','product'),createBoard('План проекта','kanban','product'),createBoard('Идеи и гипотезы','mindmap','personal'),createBoard('Ретроспектива ноября','retro','product'),createBoard('Путь пользователя','workflow','design'),createBoard('Новая доска','blank','personal')];boards[0].favorite=true;boards[1].shared=true;boards[3].favorite=true;
- return {version:VERSION,boards,projectSpaces:clone(PROJECT_SPACES),teams:[{id:'product',name:'Продуктовая команда'},{id:'design',name:'Дизайн-команда'}],settings:{accent:'#0077ff',organization:'Рабочее пространство',profile:'Никита',profileInitials:'НК',enabledModules:['home','board','mail','calendar','messenger','calls','disk','docs','tasks','notes','projects'],compact:false}};
+ return {version:VERSION,boards,projectSpaces:clone(PROJECT_SPACES),teams:[{id:'product',name:'Продуктовая команда'},{id:'design',name:'Дизайн-команда'}],settings:{theme:'dark',boardTheme:'light',accent:'#0077ff',organization:'Рабочее пространство',profile:'Никита',profileInitials:'НК',enabledModules:['home','board','mail','calendar','messenger','calls','disk','docs','tasks','notes','projects'],compact:false}};
 }
 const finite=(v,d=0)=>typeof v==='number'&&Number.isFinite(v)?Math.min(100000,Math.max(-100000,v)):d;
 export function validateBoard(input){
@@ -58,6 +58,7 @@ export function validateBoard(input){
 export function validateBackup(input){
  if(input?.version!==VERSION||!Array.isArray(input.boards)||!Array.isArray(input.teams)||!input.settings||input.boards.length>500)throw Error('Неверный формат резервной копии');
  const s=input.settings,settings={...initialState().settings};
+ for(const key of ['theme','boardTheme'])if(['light','dark','system'].includes(s[key]))settings[key]=s[key];
  for(const key of ['organization','profile','profileInitials'])if(typeof s[key]==='string')settings[key]=s[key].slice(0,key==='profileInitials'?2:120);
  if(/^#[a-f0-9]{6}$/i.test(s.accent))settings.accent=s.accent;
  if(Array.isArray(s.enabledModules))settings.enabledModules=[...new Set(['board',...s.enabledModules.filter(id=>typeof id==='string'&&/^[a-z0-9-]{1,50}$/.test(id))])];

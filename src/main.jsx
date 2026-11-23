@@ -5,4 +5,5 @@ import './styles.css';
 import './fixes.css';
 import './reference.css';
 import './features.css';
+import './themes.css';
 createRoot(document.getElementById('root')).render(<App />);
