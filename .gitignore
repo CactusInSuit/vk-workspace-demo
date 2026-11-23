@@ -1,0 +1,11 @@
+node_modules/
+dist/
+tmp/
+references/*.html
+*.log
+outputs/
+work/
+references/
+WorkSpace-local.zip
+.env
+.env.*
