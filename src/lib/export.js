@@ -1,3 +1,4 @@
+import {pollResults,pollClosed} from './polls.js';
 import {bounds} from './model.js';
 export function download(content,name,type='text/plain'){const blob=content instanceof Blob?content:new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export async function readJSON(file){if(!file)throw Error('Выберите файл');if(file.size>25*1024*1024)throw Error('Размер файла превышает 25 МБ');return JSON.parse(await file.text());}
@@ -15,6 +16,11 @@ export function boardSVG(board){
   if(n.type==='image')return `<image href="${esc(n.src)}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="none"/>`;
   if(n.type==='reaction')return svgText(n.emoji||'👍',x,y,width,Math.min(width,height)*.8);
   if(n.type==='comment')return `<circle cx="${x+16}" cy="${y+16}" r="16" fill="#0077ff"/>${svgText('…',x+6,y-3,25,20,true,'left','white')}`;
+  if(n.type==='poll'){
+   const results=pollResults(n.poll),show=!n.poll.hideResults||pollClosed(n.poll);let py=y+22+Math.max(1,Math.ceil(n.text.length/Math.max(4,Math.floor((width-36)/(18*.58)))))*25+14;
+   const rows=results.options.map(o=>{const result=svgText(`${o.text}${show?' · '+o.percent+'%':''}`,x+18,py,width-36,14);py+=Math.max(42,Math.ceil(o.text.length/Math.max(8,Math.floor((width-36)/9)))*20+12);return result;}).join('');
+   return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="14" fill="#fff" stroke="#dce4ef"/>${svgText(n.text,x+18,y+14,width-36,18,true)}${rows}${svgText(`${results.total} участн. · ${pollClosed(n.poll)?'Опрос завершён':'Опрос'}`,x+18,y+height-32,width-36,11)}`;
+  }
   if(n.type==='table'){const rows=n.rows||3,cols=n.cols||3,rh=height/rows,cw=width/cols;for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){shape+=`<rect x="${x+c*cw}" y="${y+r*rh}" width="${cw}" height="${rh}" fill="${r===0?'#eef3fa':fill}" stroke="#c2cbd8"/>${svgText(n.cells?.[r]?.[c]||'',x+c*cw+9,y+r*rh+7,cw-18,14,r===0)}`;}return shape;}
   if(n.type==='ellipse')shape=`<ellipse cx="${x+width/2}" cy="${y+height/2}" rx="${width/2}" ry="${height/2}" fill="${fill}" stroke="${stroke}"/>`;
   else if(n.type==='diamond')shape=`<polygon points="${x+width/2},${y} ${x+width},${y+height/2} ${x+width/2},${y+height} ${x},${y+height/2}" fill="${fill}" stroke="${stroke}"/>`;

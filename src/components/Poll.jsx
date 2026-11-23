@@ -1,0 +1,44 @@
+import React,{useEffect,useState} from 'react';
+import {Icon,IconButton,Modal} from './UI.jsx';
+import {blankPoll,cleanPoll,pollClosed,pollResults,votePoll,MAX_POLL_OPTIONS} from '../lib/polls.js';
+
+export function PollComposer({initial,creatorId,onSave,onClose}){
+ const [question,setQuestion]=useState(initial?.text||''),[poll,setPoll]=useState(()=>initial?.poll||blankPoll(creatorId)),[error,setError]=useState('');
+ const patch=change=>setPoll(p=>({...p,...change}));
+ const submit=e=>{e.preventDefault();try{if(!question.trim())throw Error('Введите вопрос.');const clean=cleanPoll(poll);if(clean.closesAt&&clean.closesAt<=Date.now())throw Error('Время завершения должно быть в будущем.');onSave({text:question.trim(),poll:clean,w:360,h:Math.max(400,230+clean.options.length*64)});}catch(err){setError(err.message);}};
+ return <Modal title={initial?'Изменить опрос':'Новый опрос'} onClose={onClose}><form className="poll-composer" onSubmit={submit}>
+  <label className="field">Вопрос<textarea autoFocus required maxLength={300} value={question} placeholder="Что обсудим с командой?" onChange={e=>setQuestion(e.target.value)}/><small>{question.length} / 300</small></label>
+  <fieldset className="poll-answers"><legend>Варианты ответа <small>{poll.options.length} / {MAX_POLL_OPTIONS}</small></legend>{poll.options.map((option,index)=><div className="poll-answer-row" key={option.id}>{poll.quiz&&<input type="radio" name="correct-answer" aria-label={'Правильный ответ: вариант '+(index+1)} checked={poll.correctOptionId===option.id} onChange={()=>patch({correctOptionId:option.id})}/>}<input aria-label={'Вариант '+(index+1)} required maxLength={100} placeholder={'Вариант '+(index+1)} value={option.text} onChange={e=>patch({options:poll.options.map(o=>o.id===option.id?{...o,text:e.target.value}:o)})}/><IconButton icon="X" label={'Удалить вариант '+(index+1)} disabled={poll.options.length<=2} onClick={()=>patch({options:poll.options.filter(o=>o.id!==option.id),correctOptionId:poll.correctOptionId===option.id?null:poll.correctOptionId})}/></div>)}<button type="button" className="poll-add-option" disabled={poll.options.length>=MAX_POLL_OPTIONS} onClick={()=>patch({options:[...poll.options,{id:crypto.randomUUID(),text:''}]})}><Icon name="Plus" size={16}/>Добавить вариант</button></fieldset>
+  <div className="poll-settings">{[['anonymous','Анонимное голосование','Имена участников не показываются'],['multiple','Несколько ответов','Можно выбрать несколько вариантов'],['quiz','Режим викторины','Один правильный ответ с пояснением'],['allowRevote','Разрешить изменение ответа','Участник может отозвать голос'],['hideResults','Скрыть результаты до завершения','Ответы не видны, пока идёт опрос']].map(([key,title,description])=><label className="poll-setting" key={key}><span><b>{title}</b><small>{description}</small></span><input type="checkbox" role="switch" checked={poll[key]} disabled={poll.quiz&&['multiple','allowRevote'].includes(key)} onChange={e=>patch({[key]:e.target.checked,...(key==='quiz'?{multiple:false,allowRevote:!e.target.checked}:{})})}/></label>)}</div>
+  {poll.quiz&&<><p className="muted small">Отметьте правильный вариант кружком слева от ответа.</p><label className="field">Пояснение к ответу<textarea maxLength={200} value={poll.explanation} onChange={e=>patch({explanation:e.target.value})} placeholder="Почему этот вариант правильный"/></label></>}
+  <label className="field">Автоматическое завершение (необязательно)<input type="datetime-local" value={poll.closesAt?new Date(poll.closesAt-new Date(poll.closesAt).getTimezoneOffset()*60000).toISOString().slice(0,16):''} onChange={e=>patch({closesAt:e.target.value?new Date(e.target.value).getTime():null})}/></label>
+  <p className="muted small">Опрос и ответы сохраняются вместе с доской в этом браузере.</p>{error&&<p className="poll-error" role="alert">{error}</p>}
+  <div className="modal-footer"><button type="button" className="button" onClick={onClose}>Отмена</button><button type="submit" className="button primary"><Icon name="Vote" size={17}/>{initial?'Сохранить':'Создать опрос'}</button></div>
+ </form></Modal>;
+}
+
+export function PollCard({node,profile,voterId,onPatch,onEdit,readOnly=false}){
+ const poll=node.poll,[choices,setChoices]=useState([]),[error,setError]=useState(''),[voters,setVoters]=useState(false),[closing,setClosing]=useState(false),[,setTick]=useState(0);
+ useEffect(()=>{if(!poll?.closesAt)return;const timer=setInterval(()=>setTick(t=>t+1),1000);return()=>clearInterval(timer);},[poll?.closesAt]);
+ if(!poll)return <div className="poll-card">Опрос недоступен</div>;
+ const closed=pollClosed(poll),ballot=poll.ballots.find(b=>b.voterId===voterId),results=pollResults(poll),owner=poll.creatorId===voterId&&!readOnly,showResults=(closed||!!ballot)&&(!poll.hideResults||closed),canVote=!readOnly&&!closed&&!ballot;
+ const submit=selected=>{try{onPatch({poll:votePoll(poll,voterId,selected,profile)});setChoices([]);setError('');}catch(err){setError(err.message);}};
+ return <article className="poll-card" aria-label={'Опрос: '+node.text}>
+  <header className="poll-card-header"><span><Icon name="Vote" size={17}/>{poll.quiz?'Викторина':'Опрос'}</span><Icon name="GripHorizontal" size={16}/></header>
+  <div className="poll-card-body" onPointerDown={e=>e.stopPropagation()} onDoubleClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}>
+   <h3>{node.text}</h3><p className="poll-caption">{poll.anonymous?'Анонимный':'Открытый'} · {poll.quiz?'Один правильный ответ':poll.multiple?'Несколько ответов':'Один ответ'}{closed?' · Завершён':''}</p>
+   <div className="poll-options">{results.options.map(option=>{const picked=ballot?.choices.includes(option.id)||choices.includes(option.id),correct=poll.quiz&&showResults&&option.id===poll.correctOptionId,wrong=poll.quiz&&showResults&&picked&&!correct;return <button type="button" key={option.id} className={'poll-option '+(picked?'picked ':'')+(correct?'correct ':'')+(wrong?'wrong ':'')+(showResults?'has-result':'')} disabled={!canVote} aria-pressed={!!picked} onClick={()=>poll.multiple?setChoices(values=>values.includes(option.id)?values.filter(v=>v!==option.id):[...values,option.id]):submit([option.id])}>
+    {showResults&&<span className="poll-result-bar" style={{width:option.percent+'%'}}/>}<span className={'poll-option-marker '+(poll.multiple?'square':'')}>{correct?<Icon name="Check" size={13}/>:wrong?<Icon name="X" size={13}/>:picked?<Icon name="Check" size={13}/>:null}</span><span className="poll-option-label">{option.text}</span>{showResults&&<b>{option.percent}%<small>{option.count}</small></b>}
+   </button>;})}</div>
+   {canVote&&poll.multiple&&<button className="poll-submit" disabled={!choices.length} onClick={()=>submit(choices)}>Проголосовать{choices.length?' · '+choices.length:''}</button>}
+   {!showResults&&ballot&&<p className="poll-caption">Ваш ответ принят{poll.hideResults?'. Результаты появятся после завершения.':''}</p>}
+   {poll.quiz&&ballot&&showResults&&<p className={'poll-quiz-feedback '+(ballot.choices.includes(poll.correctOptionId)?'correct':'wrong')}>{ballot.choices.includes(poll.correctOptionId)?'Верно!':'Неверный ответ.'}{poll.explanation&&<span>{poll.explanation}</span>}</p>}
+   <footer className="poll-card-footer"><span>{results.total} участн.</span>{ballot&&!closed&&poll.allowRevote&&!readOnly&&<button onClick={()=>submit([])}>Отозвать голос</button>}{!poll.anonymous&&showResults&&<button onClick={()=>setVoters(v=>!v)}>{voters?'Скрыть участников':'Кто голосовал'}</button>}</footer>
+   {voters&&showResults&&!poll.anonymous&&<div className="poll-voters">{poll.ballots.map(b=><div key={b.voterId}><b>{b.name}</b><span>{poll.options.filter(o=>b.choices.includes(o.id)).map(o=>o.text).join(', ')}</span></div>)}</div>}
+   {poll.closesAt&&!closed&&<p className="poll-caption">До {new Date(poll.closesAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>}
+   {owner&&!closed&&<div className="poll-owner-actions">{!results.total&&<button onClick={onEdit}><Icon name="Pencil" size={13}/>Изменить</button>}<button onClick={()=>setClosing(true)}>Завершить опрос</button></div>}
+   {closing&&!closed&&<div className="poll-close-confirm"><span>Завершить голосование?</span><button onClick={()=>{onPatch({poll:{...poll,closed:true}});setClosing(false);}}>Завершить</button><button onClick={()=>setClosing(false)}>Отмена</button></div>}
+   {error&&<p role="alert" className="poll-error">{error}</p>}
+  </div>
+ </article>;
+}

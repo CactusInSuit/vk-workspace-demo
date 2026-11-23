@@ -1,12 +1,13 @@
+import {cleanPoll,freshPollCopy} from './polls.js';
 export const VERSION = 1;
 export const STORAGE_KEY = 'vk-workspace-local-v1';
 export const PROJECT_SPACES = [{id:'private',name:'Никита Купряков',private:true},{id:'demo',name:'ДЕМО'},{id:'team',name:'Команда 1 · VK WorkSpace'}];
 export const uid = () => globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const clone = value => JSON.parse(JSON.stringify(value));
 export const COLORS = ['#fff2aa', '#ffd8e6', '#d6edff', '#d9f3db', '#e8ddff', '#ffffff', '#262b33'];
-export const TYPES = ['sticky','text','rect','ellipse','diamond','arrow','pen','highlight','table','frame','task','image','comment','reaction','file'];
+export const TYPES = ['sticky','text','rect','ellipse','diamond','arrow','pen','highlight','table','frame','task','image','comment','reaction','file','poll'];
 export function node(type, x = 0, y = 0, extra = {}) {
-  const sizes = {text:[280,90],sticky:[190,170],rect:[220,110],ellipse:[180,120],diamond:[160,160],arrow:[180,60],table:[420,210],frame:[740,510],task:[260,175],comment:[32,32],reaction:[56,56],image:[320,240],file:[260,95]};
+  const sizes = {poll:[360,440],text:[280,90],sticky:[190,170],rect:[220,110],ellipse:[180,120],diamond:[160,160],arrow:[180,60],table:[420,210],frame:[740,510],task:[260,175],comment:[32,32],reaction:[56,56],image:[320,240],file:[260,95]};
   const [w,h] = sizes[type] || [200,100];
   return {id:uid(),type,x,y,w,h,text:type==='sticky'?'Новая идея':type==='text'?'Введите текст':type==='frame'?'Новый фрейм':type==='task'?'Новая задача':type==='comment'?'Комментарий':'',fill:type==='sticky'?COLORS[0]:type==='text'?'transparent':'#ffffff',stroke:'#6e7a89',fontSize:18,align:'left',...extra};
 }
@@ -37,6 +38,7 @@ export function validateBoard(input){
    for(const key of ['fill','stroke'])if(typeof n[key]==='string'&&(/^[#][a-f0-9]{3,8}$/i.test(n[key])||n[key]==='transparent'))clean[key]=n[key];
    clean.align=['left','center','right'].includes(n.align)?n.align:'left';
    if(n.type==='image')clean.src=n.src;
+   if(n.type==='poll'){if(!clean.text.trim())throw Error('У опроса должен быть вопрос.');clean.text=clean.text.trim().slice(0,300);clean.poll=cleanPoll(n.poll);}
    if(n.type==='table'){clean.rows=Math.max(1,Math.min(12,Math.round(finite(n.rows,3))));clean.cols=Math.max(1,Math.min(12,Math.round(finite(n.cols,3))));}
    clean.id=uid();clean.w=Math.max(12,finite(n.w,200));clean.h=Math.max(12,finite(n.h,100));clean.fontSize=Math.max(8,Math.min(120,finite(n.fontSize,18)));
    if(Array.isArray(n.points))clean.points=n.points.slice(0,30000).filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[finite(p[0]),finite(p[1])]);
@@ -76,7 +78,7 @@ export function validateBackup(input){
 }
 export function bounds(nodes){if(!nodes.length)return {x:0,y:0,w:1000,h:650};const x=Math.min(...nodes.map(n=>n.x)),y=Math.min(...nodes.map(n=>n.y));return {x,y,w:Math.max(...nodes.map(n=>n.x+n.w))-x,h:Math.max(...nodes.map(n=>n.y+n.h))-y};}
 export function moveNodes(nodes,ids,dx,dy){return nodes.map(n=>ids.includes(n.id)&&!n.locked?{...n,x:n.x+dx,y:n.y+dy}:n);}
-export function duplicateNodes(nodes,ids,offset=30){return nodes.filter(n=>ids.includes(n.id)).map(n=>({...clone(n),id:uid(),x:n.x+offset,y:n.y+offset}));}
+export function duplicateNodes(nodes,ids,offset=30){return nodes.filter(n=>ids.includes(n.id)).map(n=>({...clone(n),id:uid(),x:n.x+offset,y:n.y+offset,...(n.type==='poll'?{poll:freshPollCopy(n.poll)}:{})}));}
 export function filterBoards(state,filter,query=''){return state.boards.filter(b=>filter==='trash'?b.deleted:!b.deleted&&(filter==='favorites'?b.favorite:filter==='shared'?b.shared:filter==='mine'?b.team==='personal':filter.startsWith('team:')?b.team===filter.slice(5):true)).filter(b=>b.name.toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru')));}
 export function loadState(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY));if(d?.version===VERSION&&Array.isArray(d.boards)&&Array.isArray(d.teams))return {...initialState(),...d,settings:{...initialState().settings,...d.settings}};}catch{}return initialState();}
 export function saveState(state){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}

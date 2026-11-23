@@ -1,0 +1,43 @@
+/* Polls are self-contained board objects; the header is their drag handle. */
+.board-node.node-poll{padding:0;border:0;border-radius:14px;overflow:visible;text-align:left;font-size:14px;min-width:320px}
+.poll-card{--poll-bg:#fff;--poll-fg:#263348;--poll-muted:#7c899d;--poll-border:#e1e7ef;--poll-hover:#f3f7fc;display:flex;flex-direction:column;width:100%;height:100%;border:1px solid var(--poll-border);border-radius:14px;background:var(--poll-bg);color:var(--poll-fg);box-shadow:0 5px 20px #19324f12;overflow:hidden;user-select:none;font:14px/1.45 Arial,sans-serif;box-sizing:border-box}
+[data-board-theme="dark"] .poll-card{--poll-bg:#242d3b;--poll-fg:#e6edf9;--poll-muted:#a2b3c9;--poll-border:#43526b;--poll-hover:#303d51}
+.poll-card-header{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;color:var(--poll-muted);border-bottom:1px solid var(--poll-border);cursor:grab;flex-shrink:0}
+.poll-card-header>span{display:flex;align-items:center;gap:8px;color:#3283e8;font-size:12px;font-weight:600}
+.poll-card-body{padding:17px 18px;overflow:auto;overscroll-behavior:contain;min-height:0;flex:1;cursor:default}
+.poll-card h3{color:var(--poll-fg);font-size:18px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap}
+.poll-caption{font-size:11px;color:var(--poll-muted);margin:7px 0 14px;line-height:1.5}
+.poll-options{display:flex;flex-direction:column;gap:8px}
+.poll-option{display:flex;position:relative;align-items:center;gap:9px;min-height:45px;width:100%;border:1px solid var(--poll-border);border-radius:8px;padding:10px;text-align:left;overflow:hidden;color:var(--poll-fg);background:transparent;font-size:13px;isolation:isolate}
+.poll-option:disabled{opacity:1;cursor:default}
+.poll-option:not(:disabled):hover{background:var(--poll-hover)}
+.poll-option-marker{width:18px;height:18px;border:1.5px solid #97abc3;border-radius:50%;display:grid;place-items:center;flex-shrink:0;color:#3283e8}
+.poll-option-marker.square{border-radius:4px}
+.poll-option-label{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45;white-space:pre-wrap}
+.poll-option.picked .poll-option-marker{border-color:#3283e8;background:#3283e818}
+.poll-option.correct .poll-option-marker{border-color:#2b9c71;background:#2b9c711a;color:#2b9c71}
+.poll-option.wrong .poll-option-marker{border-color:#dc6674;background:#dc66741a;color:#dc6674}
+.poll-result-bar{position:absolute;inset:0 auto 0 0;background:#3283e81c;z-index:-1;transition:width .3s}
+.poll-option.correct .poll-result-bar{background:#2b9c711c}.poll-option.wrong .poll-result-bar{background:#dc667418}
+.poll-option>b{font-size:12px;min-width:34px;text-align:right;color:var(--poll-fg)}.poll-option>b small{display:block;color:var(--poll-muted);font-size:10px;font-weight:400}
+.poll-submit{margin-top:12px;padding:11px;background:#3283e8;color:#fff;border-radius:8px;width:100%;font-size:12px;font-weight:600}
+.poll-card-footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;color:var(--poll-muted);font-size:11px}
+.poll-card-body button:focus-visible{outline:2px solid #3283e8;outline-offset:2px}
+.poll-card-footer button,.poll-owner-actions button{color:#3283e8;font-size:11px;padding:0}
+.poll-owner-actions{display:flex;gap:14px;align-items:center;border-top:1px solid var(--poll-border);padding-top:12px;margin-top:12px}
+.poll-owner-actions button{display:flex;align-items:center;gap:5px}
+.poll-quiz-feedback{font-size:12px;line-height:1.5;margin-top:12px}.poll-quiz-feedback.correct{color:#2b9c71}.poll-quiz-feedback.wrong{color:#dc6674}.poll-quiz-feedback span{display:block;color:var(--poll-muted);margin-top:5px}
+.poll-voters{border-top:1px solid var(--poll-border);margin-top:10px}.poll-voters>div{display:flex;flex-direction:column;gap:3px;padding-top:10px;font-size:11px}.poll-voters span{color:var(--poll-muted);overflow-wrap:anywhere}
+.poll-close-confirm{display:flex;flex-wrap:wrap;gap:10px;padding:12px;margin-top:10px;background:var(--poll-hover);border-radius:8px;font-size:11px}.poll-close-confirm span{width:100%}.poll-close-confirm button{color:#3283e8;padding:0;font-size:11px}
+.poll-composer .field textarea{min-height:70px}.poll-composer .field small{align-self:flex-end;font-size:11px;color:var(--muted)}
+.poll-answers{padding:0;border:0;margin:0 0 20px;min-width:0}.poll-answers legend{padding:0;margin-bottom:10px;font-size:14px}.poll-answers legend small{font-size:11px;color:var(--muted);margin-left:10px}
+.poll-answer-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}.poll-answer-row>input:not([type="radio"]){flex:1;min-width:0;padding:10px 12px;border:1px solid var(--border);border-radius:8px}.poll-answer-row>input[type="radio"]{width:18px;height:18px;flex-shrink:0;accent-color:var(--accent)}
+.poll-add-option{display:flex;gap:7px;align-items:center;color:var(--accent);font-size:12px;padding:6px 0}
+.poll-settings{border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:18px;padding:5px 0}
+.poll-setting{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:10px 0;cursor:pointer}.poll-setting>span{display:flex;flex-direction:column;gap:5px}.poll-setting b{font-size:13px;font-weight:500}.poll-setting small{font-size:11px;color:var(--muted)}
+.workspace-reference .poll-setting input{appearance:none;position:relative;width:34px;height:20px;min-width:34px;border:1px solid var(--shell-49576b);border-radius:14px;background:var(--shell-49576b);cursor:pointer;margin:0;transition:background .2s}
+.poll-setting input:after{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s}
+.workspace-reference .poll-setting input:checked{background:var(--accent);border-color:var(--accent)}.poll-setting input:checked:after{transform:translateX(14px)}.poll-setting input:disabled{opacity:.4;cursor:default}.poll-setting input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.poll-error{color:#ed7883;font-size:12px;margin-top:10px}
+@media(prefers-reduced-motion:reduce){.poll-result-bar,.poll-setting input,.poll-setting input:after{transition:none}}
+.feature-board .poll-card .poll-option:disabled{opacity:1}

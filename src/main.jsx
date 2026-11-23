@@ -6,4 +6,5 @@ import './fixes.css';
 import './reference.css';
 import './features.css';
 import './themes.css';
+import './polls.css';
 createRoot(document.getElementById('root')).render(<App />);
