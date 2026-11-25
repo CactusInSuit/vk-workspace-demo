@@ -7,7 +7,7 @@ import {node,uid} from '../lib/model.js';
 import {STATUSES,SECTIONS,sectionOf,canAccess,overdue,unreadEvents,diffEvents,usage,archiveNodes,restoreArchive} from '../lib/features.js';
 
 const initials=name=>(name||'Гость').split(' ').map(w=>w[0]).slice(0,2).join('');
-function Avatar({name,index=0}){return <span className={'fb-avatar fb-avatar-'+index%3} title={name}>{initials(name)}</span>;}
+function Avatar({name,index=0}){return <span className={'fb-avatar fb-avatar-'+index%3} title={name} aria-label={name}>{initials(name)}</span>;}
 export default function FeatureBoard({board,boards,settings,onChange,onBack,onAction,onNavigate,onCreate,onSplit,notify,call,setCall}){
  const [view,setView]=useState('canvas'),[section,setSection]=useState('general'),[panel,setPanel]=useState('activity'),[showChanges,setShowChanges]=useState(true),[eventFilter,setEventFilter]=useState('new'),[taskFilter,setTaskFilter]=useState('all'),[modal,setModal]=useState(null),[focus,setFocus]=useState(null),[callMenu,setCallMenu]=useState(false),[muted,setMuted]=useState(false),[camera,setCamera]=useState(true),[guestToken,setGuestToken]=useState(''),[picked,setPicked]=useState([]),[splitName,setSplitName]=useState(''),[newTitle,setNewTitle]=useState(''),[draft,setDraft]=useState(null),[guestPreview,setGuestPreview]=useState(false);
  const [voterId]=useState(pollVoterId);
