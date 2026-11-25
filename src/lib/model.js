@@ -33,8 +33,8 @@ export function validateBoard(input){
    if(!n||!TYPES.includes(n.type))throw Error('В файле есть неподдерживаемый тип объекта.');
    if(n.type==='image'&&!/^data:image\/(png|jpeg|webp|gif);base64,/i.test(n.src||''))throw Error('Изображения должны быть встроены в файл доски.');
    const clean=node(n.type,finite(n.x),finite(n.y));
-   for(const key of ['text','assignee','deadline','status','emoji','filename','author','groupId','sectionId'])if(n[key]!==undefined)clean[key]=String(n[key]).slice(0,12000);
-   for(const key of ['flipX','flipY','bold','locked'])if(n[key]!==undefined)clean[key]=!!n[key];
+   for(const key of ['text','assignee','deadline','status','priority','description','emoji','filename','author','groupId','sectionId'])if(n[key]!==undefined)clean[key]=String(n[key]).slice(0,12000);
+   for(const key of ['flipX','flipY','bold','locked','aiRecognized'])if(n[key]!==undefined)clean[key]=!!n[key];
    for(const key of ['fill','stroke'])if(typeof n[key]==='string'&&(/^[#][a-f0-9]{3,8}$/i.test(n[key])||n[key]==='transparent'))clean[key]=n[key];
    clean.align=['left','center','right'].includes(n.align)?n.align:'left';
    if(n.type==='image')clean.src=n.src;
