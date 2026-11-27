@@ -1,5 +1,6 @@
 /* Polls are self-contained board objects; the header is their drag handle. */
 .board-node.node-poll{padding:0;border:0;border-radius:18px;overflow:visible;text-align:left;font-size:14px;min-width:320px}
+.board-node.node-poll>.selection-outline{display:none}
 .poll-card{--poll-bg:#fff;--poll-fg:#172033;--poll-muted:#7d899b;--poll-border:#dfe5ee;--poll-hover:#f5f8fc;--poll-accent:#2787f5;display:flex;flex-direction:column;width:100%;height:100%;border:1px solid #d9e0e9;border-radius:18px;background:var(--poll-bg);color:var(--poll-fg);box-shadow:0 12px 34px #18315316,0 2px 6px #1831530a;overflow:hidden;user-select:none;font:14px/1.45 Arial,sans-serif;box-sizing:border-box}
 [data-board-theme="dark"] .poll-card{--poll-bg:#242d3b;--poll-fg:#edf3fc;--poll-muted:#a2b3c9;--poll-border:#43526b;--poll-hover:#303d51;box-shadow:0 14px 38px #0004}
 .poll-card-header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 14px;color:var(--poll-muted);border-bottom:1px solid var(--poll-border);cursor:grab;flex-shrink:0;background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)}
